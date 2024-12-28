@@ -1,19 +1,32 @@
 import React, { useContext, useState, useEffect } from 'react'
-import { UserContext } from '../context/user.context'
-import axios from "../config/axios"
+import { UserContext } from '../../context/user.context'
+import axios from "../../config/axios"
 import { useNavigate } from 'react-router-dom'
 
 const Home = () => {
 
   const { user } = useContext(UserContext)
   const [isModalOpen, setIsModalOpen] = useState(false)
-  
+
 
   const navigate = useNavigate()
 
-  
 
-  
+  const [projectName, setProjectName] = useState('')
+  const [projects, setProjects] = useState([])
+
+  const createProject = async (e) => {
+    e.preventDefault()
+    try {
+      const { data } = await axios.post('/project/create', { name: projectName })
+      setProjects([...projects, data])
+      setIsModalOpen(false)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+
   return (
     <main className='p-4'>
       <div className="projects flex flex-wrap gap-3">
@@ -24,7 +37,7 @@ const Home = () => {
           <i className="ri-link ml-2"></i>
         </button>
 
-      
+
       </div>
 
       {isModalOpen && (
