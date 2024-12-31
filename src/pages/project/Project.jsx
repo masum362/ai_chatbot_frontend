@@ -11,23 +11,76 @@ const Project = () => {
 
     const location = useLocation()
 
-    const [ isSidePanelOpen, setIsSidePanelOpen ] = useState(false)
-    const [ isModalOpen, setIsModalOpen ] = useState(false)
-    const [ selectedUserId, setSelectedUserId ] = useState(new Set()) // Initialized as Set
-    const [ project, setProject ] = useState(location.state.project)
-    const [ message, setMessage ] = useState('')
+    const [isSidePanelOpen, setIsSidePanelOpen] = useState(false)
+    const [isModalOpen, setIsModalOpen] = useState(false)
+    const [selectedUserId, setSelectedUserId] = useState(new Set()) // Initialized as Set
+    const [project, setProject] = useState(location.state.project)
+    const [message, setMessage] = useState('')
     const { user } = useContext(UserContext)
-    
-    
+    const [users, setUsers] = useState([])
+    const [filteredUsers, setFilteredUsers] = useState([])
 
-    
-  
+    const addCollaborators = async () => {
+        try {
+            const { data } = await axios.post(`/project/add-users`, { projectId: project._id, users: Array.from(selectedUserId) })
+            console.log(data);
+            setProject(data)
+            setIsModalOpen(false)
+        } catch (error) {
+            console.log(error)
+        }
+    }
 
-   
+    const filteredUsersFunc = function () {
+        const usersNotInProject = users.filter(user =>
+            !project.users.some(projUser => projUser._id === user._id)
+        );
+        setFilteredUsers(usersNotInProject)
 
-    
+    }
 
-   
+
+    useEffect(() => {
+
+        const getAllUsers = async (req, res) => {
+            try {
+                const { data: users } = await axios.get('/users/all')
+                setUsers(users)
+                filteredUsersFunc()
+                return;
+            } catch (error) {
+                console.log(error)
+            }
+        }
+
+        const fetchProject = async () => {
+            try {
+                const { data } = await axios.get(`/project/get-project/${project._id}`)
+                setProject(data)
+                // setSelectedUserId(new Set(data.users.map(user => user._id)))
+                getAllUsers();
+            } catch (error) {
+                console.log(error)
+            }
+        }
+
+        fetchProject()
+    }, [])
+
+
+    const handleUserClick = (userId) => {
+        console.log(userId);
+        if (selectedUserId.has(userId)) {
+            selectedUserId.delete(userId)
+        } else {
+            selectedUserId.add(userId)
+        }
+        setSelectedUserId(new Set(selectedUserId))
+    }
+
+
+    console.log(users);
+
 
     return (
         <main className='h-screen w-screen flex'>
@@ -43,7 +96,7 @@ const Project = () => {
                 </header>
                 <div className="conversation-area pt-14 pb-10 flex-grow flex flex-col h-full relative">
 
-                   
+
                     <div className="inputField w-full flex absolute bottom-0">
                         <input
                             value={message}
@@ -89,7 +142,7 @@ const Project = () => {
 
                 <div className="explorer h-full max-w-64 min-w-52 bg-slate-200">
                     <div className="file-tree w-full">
-                       
+
                     </div>
 
                 </div>
@@ -100,21 +153,21 @@ const Project = () => {
                     <div className="top flex justify-between w-full">
 
                         <div className="files flex">
-                           
+
                         </div>
 
                         <div className="actions flex gap-2">
-                           
+
 
                         </div>
                     </div>
                     <div className="bottom flex flex-grow max-w-full shrink overflow-auto">
-                   
+
                     </div>
 
                 </div>
 
-            
+
 
 
             </section>
@@ -129,10 +182,27 @@ const Project = () => {
                             </button>
                         </header>
                         <div className="users-list flex flex-col gap-2 mb-16 max-h-96 overflow-auto">
-                         
+                            {
+
+
+                                filteredUsers.map(user => (
+
+                                    <div
+                                        onClick={() => {
+                                            handleUserClick(user._id)
+                                        }}
+                                        key={user._id}
+                                        className={`user cursor-pointer p-2 flex gap-2 items-center ${selectedUserId.has(user._id) ? 'bg-slate-200' : ''}`}>
+                                        <div className='aspect-square rounded-full w-fit h-fit flex items-center justify-center p-5 text-white bg-slate-600'>
+                                            <i className="ri-user-fill absolute"></i>
+                                        </div>
+                                        <h1 className='font-semibold text-lg'>{user.email}</h1>
+                                    </div>
+                                ))
+                            }
                         </div>
                         <button
-                            // onClick={addCollaborators}
+                            onClick={addCollaborators}
                             className='absolute bottom-4 left-1/2 transform -translate-x-1/2 px-4 py-2 bg-blue-600 text-white rounded-md'>
                             Add Collaborators
                         </button>
