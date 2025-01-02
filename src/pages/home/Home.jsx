@@ -1,12 +1,14 @@
 import React, { useContext, useState, useEffect } from 'react'
 import { UserContext } from '../../context/user.context'
-import axios from "../../config/axios"
+// import axios from "../../config/axios"
 import { useNavigate } from 'react-router-dom'
+import useAxiosInstance from '../../config/useAxiosInstance'
 
 const Home = () => {
 
   const { user } = useContext(UserContext)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const axios = useAxiosInstance();
 
 
   const navigate = useNavigate()
@@ -27,15 +29,18 @@ const Home = () => {
   }
 
   useEffect(() => {
-    const fetchProjects = async () => {
-      try {
-        const { data } = await axios.get('/project/all')
-        setProjects(data)
-      } catch (error) {
-        console.log(error)
+    
+      const fetchProjects = async () => {
+        console.log('called');
+        try {
+          const { data } = await axios.get('/project/all')
+          setProjects(data)
+        } catch (error) {
+          console.log(error)
+        }
       }
-    }
-    fetchProjects()
+      fetchProjects()
+    
   }, [])
 
 

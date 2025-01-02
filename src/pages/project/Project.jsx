@@ -1,14 +1,15 @@
 import React, { useState, useEffect, useContext } from 'react'
 import { UserContext } from '../../context/user.context'
 import { useNavigate, useLocation } from 'react-router-dom'
-import axios from '../../config/axios'
+import useAxiosInstance from '../../config/useAxiosInstance'
+import { sendMessage } from '../../config/socket'
 
 
 
 
 
 const Project = () => {
-
+const axios = useAxiosInstance();
     const location = useLocation()
 
     const [isSidePanelOpen, setIsSidePanelOpen] = useState(false)
@@ -78,8 +79,10 @@ const Project = () => {
         setSelectedUserId(new Set(selectedUserId))
     }
 
+    const send = () => {
+        sendMessage('message', message);
+    }
 
-    console.log(users);
 
 
     return (
@@ -103,7 +106,7 @@ const Project = () => {
                             onChange={(e) => setMessage(e.target.value)}
                             className='p-2 px-4 border-none outline-none flex-grow' type="text" placeholder='Enter message' />
                         <button
-                            // onClick={send}
+                            onClick={send}
                             className='px-5 bg-slate-950 text-white'><i className="ri-send-plane-fill"></i></button>
                     </div>
                 </div>

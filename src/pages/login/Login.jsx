@@ -1,15 +1,15 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import axios from '../../config/axios'
 import { useContext } from 'react'
-import { UserContext  } from '../../context/user.context'
+import { UserContext } from '../../context/user.context'
+import useAxiosInstance from '../../config/useAxiosInstance'
 
 const Login = () => {
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const { setUser } = useContext(UserContext );
-
+    const { setUser, setLoading } = useContext(UserContext);
+    const axios = useAxiosInstance();
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
@@ -22,9 +22,13 @@ const Login = () => {
             if (response.status === 200) {
                 setUser(response.data.user);
                 localStorage.setItem('token', response.data.token);
-                navigate('/');
+                setLoading(false);
+                setTimeout(() => {
+                    navigate('/');
+                }, 2000);
             }
         } catch (error) {
+            setLoading(false);
             console.error(error);
         }
     }
