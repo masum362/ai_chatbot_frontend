@@ -20,7 +20,7 @@ const Home = () => {
   const createProject = async (e) => {
     e.preventDefault()
     try {
-      const { data } = await axios.post('/project/create', { name: projectName })
+      const { data } = await axios.post('/api/project/create', { name: projectName })
       setProjects([...projects, data])
       setIsModalOpen(false)
     } catch (error) {
@@ -33,7 +33,7 @@ const Home = () => {
       const fetchProjects = async () => {
         console.log('called');
         try {
-          const { data } = await axios.get('/project/all')
+          const { data } = await axios.get('/api/project/all')
           setProjects(data)
         } catch (error) {
           console.log(error)

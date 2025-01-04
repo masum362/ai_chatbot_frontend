@@ -17,7 +17,7 @@ const axios = useAxiosInstance();
         e.preventDefault();
 
         try {
-            const response = await axios.post('/users/register', {
+            const response = await axios.post('/api/users/register', {
                 name,
                 username,
                 email,

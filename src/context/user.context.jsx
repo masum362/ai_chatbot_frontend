@@ -13,7 +13,7 @@ const UserProvider = ({ children }) => {
 
     const getUser = async () => {
       try {
-        const response = await axios.get('/users/user')
+        const response = await axios.get('/api/users/user')
 
         if (response.status === 200) {
           setUser(response.data.user)

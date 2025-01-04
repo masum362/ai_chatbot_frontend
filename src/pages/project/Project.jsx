@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from 'react'
 import { UserContext } from '../../context/user.context'
 import { useNavigate, useLocation } from 'react-router-dom'
 import useAxiosInstance from '../../config/useAxiosInstance'
-import { sendMessage } from '../../config/socket'
+import { initializeSocket, sendMessage } from '../../config/socket'
 
 
 
@@ -23,7 +23,7 @@ const axios = useAxiosInstance();
 
     const addCollaborators = async () => {
         try {
-            const { data } = await axios.post(`/project/add-users`, { projectId: project._id, users: Array.from(selectedUserId) })
+            const { data } = await axios.post(`/api/project/add-users`, { projectId: project._id, users: Array.from(selectedUserId) })
             console.log(data);
             setProject(data)
             setIsModalOpen(false)
@@ -45,7 +45,7 @@ const axios = useAxiosInstance();
 
         const getAllUsers = async (req, res) => {
             try {
-                const { data: users } = await axios.get('/users/all')
+                const { data: users } = await axios.get('/api/users/all')
                 setUsers(users)
                 filteredUsersFunc()
                 return;
@@ -56,7 +56,7 @@ const axios = useAxiosInstance();
 
         const fetchProject = async () => {
             try {
-                const { data } = await axios.get(`/project/get-project/${project._id}`)
+                const { data } = await axios.get(`/api/project/get-project/${project._id}`)
                 setProject(data)
                 // setSelectedUserId(new Set(data.users.map(user => user._id)))
                 getAllUsers();
@@ -65,6 +65,7 @@ const axios = useAxiosInstance();
             }
         }
 
+        initializeSocket();
         fetchProject()
     }, [])
 
@@ -127,7 +128,7 @@ const axios = useAxiosInstance();
 
 
                             return (
-                                <div className="user cursor-pointer hover:bg-slate-200 p-2 flex gap-2 items-center">
+                                <div className="user cursor-pointer hover:bg-slate-200 p-2 flex gap-2 items-center" key={user._id}>
                                     <div className='aspect-square rounded-full w-fit h-fit flex items-center justify-center p-5 text-white bg-slate-600'>
                                         <i className="ri-user-fill absolute"></i>
                                     </div>
