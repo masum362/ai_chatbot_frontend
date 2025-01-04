@@ -1,15 +1,15 @@
-import React, { useState, useEffect, useContext } from 'react'
+import React, { useState, useEffect, useContext, useRef } from 'react'
 import { UserContext } from '../../context/user.context'
 import { useNavigate, useLocation } from 'react-router-dom'
 import useAxiosInstance from '../../config/useAxiosInstance'
-import { initializeSocket, sendMessage } from '../../config/socket'
+import { initializeSocket, receiveMessage, sendMessage } from '../../config/socket'
 
 
 
 
 
 const Project = () => {
-const axios = useAxiosInstance();
+    const axios = useAxiosInstance();
     const location = useLocation()
 
     const [isSidePanelOpen, setIsSidePanelOpen] = useState(false)
@@ -20,6 +20,8 @@ const axios = useAxiosInstance();
     const { user } = useContext(UserContext)
     const [users, setUsers] = useState([])
     const [filteredUsers, setFilteredUsers] = useState([])
+    const [messages, setMessages] = useState([])
+    const messageBox = useRef();
 
     const addCollaborators = async () => {
         try {
@@ -43,6 +45,10 @@ const axios = useAxiosInstance();
 
     useEffect(() => {
 
+
+        // initializeSocket(project._id) is called here to initialize the socket connection
+        initializeSocket(project._id);
+
         const getAllUsers = async (req, res) => {
             try {
                 const { data: users } = await axios.get('/api/users/all')
@@ -65,7 +71,13 @@ const axios = useAxiosInstance();
             }
         }
 
-        initializeSocket();
+        // receiveMessage('project-message', data => {}) is called here to listen for messages
+        receiveMessage('project-message', data => {
+            setMessages(prevMessages => [...prevMessages, data])
+            
+        })
+
+
         fetchProject()
     }, [])
 
@@ -81,8 +93,14 @@ const axios = useAxiosInstance();
     }
 
     const send = () => {
-        sendMessage('message', message);
+        sendMessage('project-message', {
+            message,
+            sender: user,
+        });
+        setMessage('')
+        setMessages(prevMessages => [...prevMessages, { message, sender: user }])
     }
+
 
 
 
@@ -99,7 +117,21 @@ const axios = useAxiosInstance();
                     </button>
                 </header>
                 <div className="conversation-area pt-14 pb-10 flex-grow flex flex-col h-full relative">
-
+                    <div
+                        ref={messageBox}
+                        className="message-box p-1 flex-grow flex flex-col gap-1 overflow-auto max-h-full scrollbar-hide">
+                        {messages.map((msg, index) => (
+                            <div key={index} className={`${msg.sender._id === 'ai' ? 'max-w-80' : 'max-w-52'} ${msg.sender._id == user._id.toString() && 'ml-auto'}  message flex flex-col p-2 bg-slate-50 w-fit rounded-md`}>
+                                <small className='opacity-65 text-xs'>{msg.sender.email}</small>
+                                <div className='text-sm'>
+                                    {msg.sender._id === 'ai' ?
+                                        // WriteAiMessage(msg.message)
+                                        "success"
+                                        : <p>{msg.message}</p>}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
 
                     <div className="inputField w-full flex absolute bottom-0">
                         <input
@@ -108,6 +140,7 @@ const axios = useAxiosInstance();
                             className='p-2 px-4 border-none outline-none flex-grow' type="text" placeholder='Enter message' />
                         <button
                             onClick={send}
+                            type='submit'
                             className='px-5 bg-slate-950 text-white'><i className="ri-send-plane-fill"></i></button>
                     </div>
                 </div>

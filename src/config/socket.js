@@ -3,7 +3,7 @@ import socket from "socket.io-client";
 let socketInstance = null;
 
 const initializeSocket = (projectId) => {
-  const socketInstance = socket(import.meta.env.VITE_API_URL, {
+  socketInstance = socket(import.meta.env.VITE_API_URL, {
     auth: {
       token: localStorage.getItem("token"),
     },
@@ -14,12 +14,16 @@ const initializeSocket = (projectId) => {
   return socketInstance;
 };
 
-const sendMessage = (eventName,data) => {
+const sendMessage = (eventName, data) => {
+  
   socketInstance.emit(eventName, data);
 };
 
-const receiveMessage = (eventName,cb) => {
-  socketInstance.on(eventName, cb);
+const receiveMessage = (eventName, cb) => {
+  
+    socketInstance.on(eventName, cb);
 };
+
+console.log(socketInstance);
 
 export { initializeSocket, sendMessage, receiveMessage };
